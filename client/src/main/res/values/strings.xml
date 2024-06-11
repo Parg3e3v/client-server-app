@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Client</string>
+    <string name="start">Начать</string>
+    <string name="end">Пауза</string>
+    <string name="title">Config</string>
+    <string name="deny">Отмена</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="config">Config</string>
 </resources>

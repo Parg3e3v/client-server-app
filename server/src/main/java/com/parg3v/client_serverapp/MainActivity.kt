@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.parg3v.client_serverapp.ui.theme.ClientServerAppTheme
+import com.parg3v.client_serverapp.view.ServerView
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,28 +21,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             ClientServerAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Server",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    ServerView(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello from $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ClientServerAppTheme {
-        Greeting("Android")
     }
 }

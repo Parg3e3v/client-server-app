@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Server</string>
+    <string name="start">Начать</string>
+    <string name="stop">Выключить</string>
+    <string name="title">Config</string>
+    <string name="deny">Отмена</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="logs">Логи</string>
+    <string name="config">Config</string>
 </resources>
