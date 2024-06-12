@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.json)
 
+    // Ktor Server
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.websockets)
+
     // Serialization
     implementation (libs.kotlinx.serialization.json)
 
