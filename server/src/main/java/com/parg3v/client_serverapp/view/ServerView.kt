@@ -1,6 +1,7 @@
 package com.parg3v.client_serverapp.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,63 +35,81 @@ fun ServerView(modifier: Modifier = Modifier) {
 
     var started by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = { dialogVisible.value = true }) {
-            Text(text = stringResource(R.string.config))
-        }
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_col_inner))
+        ) {
 
-        if (dialogVisible.value)
-            CustomServerDialog(
-                onDismiss = { dialogVisible.value = false },
-                portProvider = { "port" },
-                onPortChange = {}
+            if (dialogVisible.value)
+                CustomServerDialog(
+                    onDismiss = { dialogVisible.value = false },
+                    portProvider = { "port" },
+                    onPortChange = {}
+                )
+
+            if (logsVisible.value)
+                Dialog(onDismissRequest = { logsVisible.value = false }) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        shape = RoundedCornerShape(dimensionResource(id = R.dimen.logs_dialog_corner_radius)),
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(dimensionResource(id = R.dimen.logs_dialog_padding)),
+                            text = "Lorem Ipsum is simply dummy text of the printing and typesetting " +
+                                    "industry. Lorem Ipsum has been the industry's standard dummy text ever " +
+                                    "since the 1500s, when an unknown printer took a galley of type and scrambled " +
+                                    "it to make a type specimen book. It has survived not only five centuries, " +
+                                    "but also the leap into electronic typesetting, remaining essentially " +
+                                    "unchanged. It was popularised in the 1960s with the release of Letraset " +
+                                    "sheets containing Lorem Ipsum passages, and more recently with desktop " +
+                                    "publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+                        )
+                    }
+                }
+
+            Text(
+                text = stringResource(id = R.string.server),
+                style = MaterialTheme.typography.titleLarge
             )
 
-        if (logsVisible.value)
-            Dialog(onDismissRequest = { logsVisible.value = false }) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
-                    shape = RoundedCornerShape(dimensionResource(id = R.dimen.logs_dialog_corner_radius)),
+            Button(onClick = { dialogVisible.value = true }) {
+                Text(text = stringResource(R.string.config))
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(id = R.dimen.padding_row)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_row_inner))
+            ) {
+                Button(
+                    modifier = Modifier.weight(1F),
+                    onClick = { started = !started },
+                    enabled = !started
                 ) {
-                    Text(
-                        modifier = Modifier.padding(dimensionResource(id = R.dimen.logs_dialog_padding)),
-                        text = "Lorem Ipsum is simply dummy text of the printing and typesetting " +
-                                "industry. Lorem Ipsum has been the industry's standard dummy text ever " +
-                                "since the 1500s, when an unknown printer took a galley of type and scrambled " +
-                                "it to make a type specimen book. It has survived not only five centuries, " +
-                                "but also the leap into electronic typesetting, remaining essentially " +
-                                "unchanged. It was popularised in the 1960s with the release of Letraset " +
-                                "sheets containing Lorem Ipsum passages, and more recently with desktop " +
-                                "publishing software like Aldus PageMaker including versions of Lorem Ipsum."
-                    )
+                    Text(text = stringResource(R.string.start))
+                }
+
+                Button(
+                    modifier = Modifier.weight(1F),
+                    onClick = { started = !started },
+                    enabled = started
+                ) {
+                    Text(text = stringResource(id = R.string.stop))
                 }
             }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(onClick = { started = !started }, enabled = !started) {
-                Text(text = stringResource(R.string.start))
+
+            Button(onClick = { logsVisible.value = true }) {
+                Text(text = stringResource(R.string.logs))
             }
 
-
-            Button(onClick = { started = !started }, enabled = started) {
-                Text(text = stringResource(id = R.string.stop))
-            }
         }
-
-        Button(onClick = { logsVisible.value = true }) {
-            Text(text = stringResource(R.string.logs))
-        }
-
     }
 }
 

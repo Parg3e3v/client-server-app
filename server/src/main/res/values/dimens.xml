@@ -5,4 +5,7 @@
     <dimen name="dialog_default_padding">5dp</dimen>
     <dimen name="logs_dialog_padding">16dp</dimen>
     <dimen name="logs_dialog_corner_radius">8dp</dimen>
+    <dimen name="padding_row">60dp</dimen>
+    <dimen name="padding_row_inner">5dp</dimen>
+    <dimen name="padding_col_inner">20dp</dimen>
 </resources>

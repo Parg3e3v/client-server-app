@@ -7,4 +7,5 @@
     <string name="confirm">Подтвердить</string>
     <string name="logs">Логи</string>
     <string name="config">Config</string>
+    <string name="server">Сервер</string>
 </resources>
