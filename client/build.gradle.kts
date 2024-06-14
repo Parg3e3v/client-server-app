@@ -10,6 +10,14 @@ android {
     namespace = "com.parg3v.client"
     compileSdk = 34
 
+    packaging {
+        resources.excludes.add("META-INF/*")
+    }
+
+    hilt {
+        enableAggregatingTask = true
+    }
+
     defaultConfig {
         applicationId = "com.parg3v.client"
         minSdk = 24

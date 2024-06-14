@@ -26,14 +26,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.parg3v.client_serverapp.R
 import com.parg3v.client_serverapp.components.CustomServerDialog
+import com.parg3v.client_serverapp.model.ServerStatus
 
 @Composable
-fun ServerView(modifier: Modifier = Modifier) {
+fun ServerView(
+    modifier: Modifier = Modifier,
+    portProvider: () -> String,
+    onPortChange: (String) -> Unit,
+    ipProvider: () -> String,
+    startServer: () -> Unit,
+    stopServer: () -> Unit,
+    isServerStarted: Boolean,
+    serverStatusProvider: () -> ServerStatus
+) {
 
     val dialogVisible = remember { mutableStateOf(false) }
     val logsVisible = remember { mutableStateOf(false) }
-
-    var started by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -45,8 +53,10 @@ fun ServerView(modifier: Modifier = Modifier) {
             if (dialogVisible.value)
                 CustomServerDialog(
                     onDismiss = { dialogVisible.value = false },
-                    portProvider = { "port" },
-                    onPortChange = {}
+                    portProvider = portProvider,
+                    onPortChange = onPortChange,
+                    ipProvider = ipProvider,
+                    savePort = {}
                 )
 
             if (logsVisible.value)
@@ -64,7 +74,7 @@ fun ServerView(modifier: Modifier = Modifier) {
                                     "since the 1500s, when an unknown printer took a galley of type and scrambled " +
                                     "it to make a type specimen book. It has survived not only five centuries, " +
                                     "but also the leap into electronic typesetting, remaining essentially " +
-                                    "unchanged. It was popularised in the 1960s with the release of Letraset " +
+                                    "unchanged. It was popularised in the 1960s with the release of Elettra " +
                                     "sheets containing Lorem Ipsum passages, and more recently with desktop " +
                                     "publishing software like Aldus PageMaker including versions of Lorem Ipsum."
                         )
@@ -89,16 +99,20 @@ fun ServerView(modifier: Modifier = Modifier) {
             ) {
                 Button(
                     modifier = Modifier.weight(1F),
-                    onClick = { started = !started },
-                    enabled = !started
+                    onClick = {
+                        startServer()
+                    },
+                    enabled = !isServerStarted
                 ) {
                     Text(text = stringResource(R.string.start))
                 }
 
                 Button(
                     modifier = Modifier.weight(1F),
-                    onClick = { started = !started },
-                    enabled = started
+                    onClick = {
+                        stopServer()
+                    },
+                    enabled = isServerStarted
                 ) {
                     Text(text = stringResource(id = R.string.stop))
                 }
@@ -109,6 +123,18 @@ fun ServerView(modifier: Modifier = Modifier) {
                 Text(text = stringResource(R.string.logs))
             }
 
+            var serverStatusText by remember { mutableStateOf("") }
+
+            val serverStatus = serverStatusProvider()
+            serverStatusText = when (serverStatus) {
+                is ServerStatus.Error -> stringResource(id = R.string.server_error, serverStatus.message)
+                is ServerStatus.Offline -> stringResource(id = R.string.server_offline)
+                is ServerStatus.Online -> stringResource(id = R.string.server_online, ipProvider(), portProvider())
+
+            }
+
+            Text(text = serverStatusText, style = MaterialTheme.typography.bodySmall)
+
         }
     }
 }
@@ -116,5 +142,13 @@ fun ServerView(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun ServerViewPreview() {
-    ServerView()
+    ServerView(
+        portProvider = { "123" },
+        onPortChange = {},
+        ipProvider = { "127.0.0.1" },
+        startServer = {},
+        stopServer = {},
+        isServerStarted = false,
+        serverStatusProvider = { ServerStatus.Offline }
+    )
 }

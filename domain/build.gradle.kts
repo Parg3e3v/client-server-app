@@ -9,6 +9,14 @@ android {
     namespace = "com.parg3v.domain"
     compileSdk = 34
 
+    packaging {
+        resources.excludes.add("META-INF/*")
+    }
+
+    hilt {
+        enableAggregatingTask = true
+    }
+
     defaultConfig {
         minSdk = 24
 

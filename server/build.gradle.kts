@@ -10,6 +10,14 @@ android {
     namespace = "com.parg3v.client_serverapp"
     compileSdk = 34
 
+    packaging {
+        resources.excludes.add("META-INF/*")
+    }
+
+    hilt {
+        enableAggregatingTask = true
+    }
+
     defaultConfig {
         applicationId = "com.parg3v.client_serverapp"
         minSdk = 24
@@ -50,6 +58,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain"))
+    implementation(project(":data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -76,4 +86,5 @@ dependencies {
     // Dagger-Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 }
