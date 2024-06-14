@@ -7,11 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.parg3v.client.ui.theme.ClientServerAppTheme
+import com.parg3v.client.ui.theme.ClientserverappTheme
 import com.parg3v.client.view.ClientView
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +16,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ClientServerAppTheme {
+            ClientserverappTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     ClientView(modifier = Modifier.padding(innerPadding))
                 }

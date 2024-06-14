@@ -10,6 +10,14 @@ android {
     namespace = "com.parg3v.data"
     compileSdk = 34
 
+    packaging {
+        resources.excludes.add("META-INF/*")
+    }
+
+    hilt {
+        enableAggregatingTask = true
+    }
+
     defaultConfig {
         minSdk = 24
 
@@ -36,6 +44,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -53,6 +62,9 @@ dependencies {
     // Ktor Server
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.websockets)
+    implementation (libs.ktor.server.netty)
+    implementation (libs.ktor.server.host.common)
+    implementation (libs.ktor.server.status.pages)
 
     // Serialization
     implementation (libs.kotlinx.serialization.json)

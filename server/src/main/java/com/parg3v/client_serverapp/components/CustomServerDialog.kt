@@ -24,7 +24,9 @@ import com.parg3v.client_serverapp.R
 fun CustomServerDialog(
     onDismiss: () -> Unit,
     portProvider: () -> String,
-    onPortChange: (String) -> Unit
+    onPortChange: (String) -> Unit,
+    ipProvider: () -> String,
+    savePort: () -> Unit
 ) {
     Dialog(onDismiss) {
         Surface(shape = MaterialTheme.shapes.medium) {
@@ -34,6 +36,7 @@ fun CustomServerDialog(
                     Spacer(Modifier.size(dimensionResource(id = R.dimen.dialog_spacer_1)))
 
                     OutlinedTextField(value = portProvider(), onValueChange = onPortChange)
+                    Text(text = stringResource(id = R.string.ip_text, ipProvider()), style = MaterialTheme.typography.bodySmall)
                 }
                 Spacer(Modifier.size(dimensionResource(id = R.dimen.dialog_default_padding)))
                 Row(
@@ -48,7 +51,10 @@ fun CustomServerDialog(
                     Button(onClick = { onDismiss() }) {
                         Text(text = stringResource(R.string.deny))
                     }
-                    Button(onClick = { /*TODO*/ }) {
+                    Button(onClick = {
+                        savePort()
+                        onDismiss()
+                    }) {
                         Text(text = stringResource(R.string.confirm))
                     }
                 }

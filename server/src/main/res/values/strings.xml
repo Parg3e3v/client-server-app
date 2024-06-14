@@ -8,4 +8,8 @@
     <string name="logs">Логи</string>
     <string name="config">Config</string>
     <string name="server">Сервер</string>
+    <string name="ip_text">Ip сервера: %1$s</string>
+    <string name="server_offline">Сервер не запущен</string>
+    <string name="server_online">Сервер запущен: %1$s:%2$s</string>
+    <string name="server_error">Ошбка при запуске сервера: %1$s</string>
 </resources>
