@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
                 val ip by viewModel.ip.collectAsStateWithLifecycle()
                 val serverStatus by viewModel.serverStatus.collectAsStateWithLifecycle()
                 val isServerStarted by viewModel.isServerStarted.collectAsStateWithLifecycle()
+                val logStatus by viewModel.gestureLogs.collectAsStateWithLifecycle()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     ServerView(
@@ -39,7 +40,9 @@ class MainActivity : ComponentActivity() {
                         startServer = viewModel::startServer,
                         stopServer = viewModel::stopServer,
                         serverStatusProvider = { serverStatus },
-                        isServerStarted = isServerStarted
+                        isServerStarted = { isServerStarted },
+                        logStatus = { logStatus },
+                        getLogs = viewModel::getLogs
                     )
                 }
             }
