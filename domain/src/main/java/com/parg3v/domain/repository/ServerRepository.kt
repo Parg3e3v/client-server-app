@@ -1,6 +1,8 @@
 package com.parg3v.domain.repository
 
 interface ServerRepository {
-    fun startServer(port: Int)
-    fun stopServer()
+    suspend fun startServer(port: Int)
+    suspend fun stopServer()
+    fun sendGestures()
+    fun generateRandomGesture(): String
 }

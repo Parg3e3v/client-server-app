@@ -18,16 +18,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.parg3v.client.R
 import com.parg3v.client.components.CustomClientDialog
+import com.parg3v.client.model.ClientStatus
 
 @Composable
-fun ClientView(modifier: Modifier = Modifier) {
-    val start = stringResource(R.string.start)
-    val end = stringResource(id = R.string.end)
-    var started by remember { mutableStateOf(true) }
+fun ClientView(
+    modifier: Modifier = Modifier,
+    ipProvider: () -> String,
+    validateIp: (String) -> Boolean,
+    portProvider: () -> String,
+    validatePort: (String) -> Boolean,
+    clientStatusProvider: () -> ClientStatus,
+    stopClient: () -> Unit,
+    startClient: () -> Unit
+) {
+    val buttonText: String
     val dialogVisible = remember { mutableStateOf(false) }
+    val switchClientState: () -> Unit
+    val buttonColor: Color
+
+    if (clientStatusProvider() is ClientStatus.Online) {
+        switchClientState = stopClient
+        buttonColor = MaterialTheme.colorScheme.error
+        buttonText = stringResource(id = R.string.end)
+    } else {
+        switchClientState = startClient
+        buttonColor = MaterialTheme.colorScheme.primary
+        buttonText = stringResource(R.string.start)
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -38,10 +59,10 @@ fun ClientView(modifier: Modifier = Modifier) {
             if (dialogVisible.value)
                 CustomClientDialog(
                     onDismiss = { dialogVisible.value = false },
-                    ipProvider = { "id" },
-                    onIpChange = {},
-                    portProvider = { "port" },
-                    onPortChange = {}
+                    ipProvider = ipProvider,
+                    portProvider = portProvider,
+                    validatePort = validatePort,
+                    validateIp = validateIp
                 )
 
             Text(
@@ -54,15 +75,39 @@ fun ClientView(modifier: Modifier = Modifier) {
             }
 
             Button(
-                onClick = { started = !started }, colors = ButtonColors(
-                    containerColor = if (started) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                onClick = { switchClientState() }, colors = ButtonColors(
+                    containerColor = buttonColor,
                     contentColor = Color.White,
                     disabledContainerColor = Color.Gray,
                     disabledContentColor = Color.White
                 )
             ) {
-                Text(text = if (started) start else end)
+                Text(text = buttonText)
             }
+
+            var clientStatusText by remember { mutableStateOf("") }
+
+            val clientStatus = clientStatusProvider()
+            clientStatusText = when (clientStatus) {
+                is ClientStatus.Error -> stringResource(
+                    id = R.string.client_error,
+                    clientStatus.message
+                )
+
+                is ClientStatus.Offline -> stringResource(id = R.string.client_offline)
+                is ClientStatus.Online -> stringResource(
+                    id = R.string.client_online,
+                    ipProvider(),
+                    portProvider()
+                )
+
+            }
+
+            Text(
+                text = clientStatusText,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -71,5 +116,12 @@ fun ClientView(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun ClientViewPreview() {
-    ClientView()
+    ClientView(
+        ipProvider = { "" },
+        validateIp = { true },
+        portProvider = { "" },
+        validatePort = { true },
+        clientStatusProvider = { ClientStatus.Offline },
+        stopClient = {},
+        startClient = {})
 }

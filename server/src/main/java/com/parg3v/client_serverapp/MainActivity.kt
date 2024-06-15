@@ -28,18 +28,19 @@ class MainActivity : ComponentActivity() {
                 val port by viewModel.port.collectAsStateWithLifecycle()
                 val ip by viewModel.ip.collectAsStateWithLifecycle()
                 val serverStatus by viewModel.serverStatus.collectAsStateWithLifecycle()
-                val isServerStarted by viewModel.isServerStarted.collectAsStateWithLifecycle()
+                val logStatus by viewModel.gestureLogs.collectAsStateWithLifecycle()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     ServerView(
                         modifier = Modifier.padding(innerPadding),
                         portProvider = { port },
-                        onPortChange = viewModel::setPort,
+                        onPortChange = viewModel::validatePort,
                         ipProvider = { ip },
                         startServer = viewModel::startServer,
                         stopServer = viewModel::stopServer,
                         serverStatusProvider = { serverStatus },
-                        isServerStarted = isServerStarted
+                        logStatus = { logStatus },
+                        getLogs = viewModel::getLogs
                     )
                 }
             }

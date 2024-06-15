@@ -53,11 +53,10 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Ktor Client
-    implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.serialization)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.client.json)
+    // Ktor
+    implementation (libs.ktor.client.core)
+    implementation (libs.ktor.client.okhttp)
+    implementation (libs.ktor.client.websockets)
 
     // Ktor Server
     implementation(libs.ktor.server.core)
@@ -81,5 +80,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     annotationProcessor(libs.androidx.room.room.compiler)
     ksp(libs.androidx.room.room.compiler)
+
+    //Data Store
+    implementation (libs.androidx.datastore.preferences)
 
 }

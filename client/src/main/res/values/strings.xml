@@ -7,4 +7,10 @@
     <string name="confirm">Подтвердить</string>
     <string name="config">Config</string>
     <string name="client">Клиент</string>
+    <string name="client_offline">Сервер не запущен</string>
+    <string name="client_online">Сервер запущен: %1$s:%2$s</string>
+    <string name="client_error">Ошбка при запуске сервера: %1$s</string>
+    <string name="invalid_ip_port">Неверные значения</string>
+    <string name="ip_text">Ip</string>
+    <string name="port_text">Порт</string>
 </resources>
