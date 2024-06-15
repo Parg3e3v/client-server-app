@@ -2,10 +2,10 @@ package com.parg3v.domain.module
 
 import com.parg3v.domain.repository.GestureLogRepository
 import com.parg3v.domain.repository.ServerRepository
-import com.parg3v.domain.use_cases.GetLogsFormDBUseCase
-import com.parg3v.domain.use_cases.ProvideServerIpUseCase
-import com.parg3v.domain.use_cases.StartServerUseCase
-import com.parg3v.domain.use_cases.StopServerUseCase
+import com.parg3v.domain.use_cases.server.GetLogsFormDBUseCase
+import com.parg3v.domain.use_cases.common.ProvideServerIpUseCase
+import com.parg3v.domain.use_cases.server.StartServerUseCase
+import com.parg3v.domain.use_cases.server.StopServerUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,13 +30,13 @@ object ServerModule {
 
     @Provides
     @Singleton
-    fun provideServerIpUseCase(): ProvideServerIpUseCase{
+    fun provideServerIpUseCase(): ProvideServerIpUseCase {
         return ProvideServerIpUseCase()
     }
 
     @Provides
     @Singleton
-    fun provideGetLogsFromDBUseCase(repository: GestureLogRepository): GetLogsFormDBUseCase{
+    fun provideGetLogsFromDBUseCase(repository: GestureLogRepository): GetLogsFormDBUseCase {
         return GetLogsFormDBUseCase(repository)
     }
 

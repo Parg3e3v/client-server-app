@@ -41,7 +41,6 @@ fun ServerView(
     ipProvider: () -> String,
     startServer: () -> Unit,
     stopServer: () -> Unit,
-    isServerStarted: () -> Boolean,
     serverStatusProvider: () -> ServerStatus,
     logStatus: () -> LogsStatus,
     getLogs: () -> Unit
@@ -92,7 +91,7 @@ fun ServerView(
                     onClick = {
                         startServer()
                     },
-                    enabled = !isServerStarted()
+                    enabled = !serverStatusProvider().isStarted
                 ) {
                     Text(text = stringResource(R.string.start))
                 }
@@ -102,7 +101,7 @@ fun ServerView(
                     onClick = {
                         stopServer()
                     },
-                    enabled = isServerStarted()
+                    enabled = serverStatusProvider().isStarted
                 ) {
                     Text(text = stringResource(id = R.string.stop))
                 }
@@ -130,7 +129,7 @@ fun ServerView(
 }
 
 @Composable
-fun ShowLogsDialog(logsVisible: MutableState<Boolean>, logStatus: LogsStatus) {
+private fun ShowLogsDialog(logsVisible: MutableState<Boolean>, logStatus: LogsStatus) {
 
     Dialog(onDismissRequest = { logsVisible.value = false }) {
         Card(
@@ -170,7 +169,6 @@ private fun ServerViewPreview() {
         ipProvider = { "127.0.0.1" },
         startServer = {},
         stopServer = {},
-        isServerStarted = { false },
         serverStatusProvider = { ServerStatus.Offline },
         logStatus = { LogsStatus(data = listOf(GestureLog(timestamp = 654654, message = "test"))) },
         getLogs = {}

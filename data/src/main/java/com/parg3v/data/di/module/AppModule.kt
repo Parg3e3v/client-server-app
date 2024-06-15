@@ -2,9 +2,11 @@ package com.parg3v.data.di.module
 
 import android.content.Context
 import androidx.room.Room
+import com.parg3v.data.gesture.GestureHandler
 import com.parg3v.data.local.GestureLogDao
 import com.parg3v.data.local.GestureLogDatabase
-import com.parg3v.data.repository.GestureLogRepositoryImpl
+import com.parg3v.data.repository.ClientRepositoryImpl
+import com.parg3v.domain.repository.ClientRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +17,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
+object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext app: Context): GestureLogDatabase {
@@ -27,13 +29,16 @@ object DatabaseModule {
     }
 
     @Provides
+    @Singleton
     fun provideGestureLogDao(database: GestureLogDatabase): GestureLogDao {
         return database.gestureLogDao()
     }
 
     @Provides
     @Singleton
-    fun provideGestureLogRepository(dao: GestureLogDao): GestureLogRepositoryImpl {
-        return GestureLogRepositoryImpl(dao)
-    }
+    fun provideClientRepository(
+        @ApplicationContext app: Context,
+        gestureHandler: GestureHandler,
+        gestureLogDao: GestureLogDao
+    ): ClientRepository = ClientRepositoryImpl(app, gestureLogDao, gestureHandler)
 }

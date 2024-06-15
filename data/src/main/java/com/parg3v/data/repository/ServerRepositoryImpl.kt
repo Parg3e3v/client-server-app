@@ -2,6 +2,7 @@ package com.parg3v.data.repository
 
 import android.util.Log
 import com.parg3v.domain.common.config.ServerConfig
+import com.parg3v.domain.repository.GestureLogRepository
 import com.parg3v.domain.repository.ServerRepository
 import io.ktor.server.application.install
 import io.ktor.server.engine.ApplicationEngine
@@ -19,14 +20,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+import kotlin.random.Random
 
 class ServerRepositoryImpl @Inject constructor(
-    private val gestureLogRepositoryImpl: GestureLogRepositoryImpl
+    private val gestureLogRepository: GestureLogRepository
 ) : ServerRepository {
 
     private var server: ApplicationEngine? = null
 
-    override fun startServer(port: Int) {
+    override suspend fun startServer(port: Int) {
         server = embeddedServer(Netty, host = ServerConfig.IP, port = port) {
             install(WebSockets)
             routing {
@@ -34,7 +36,7 @@ class ServerRepositoryImpl @Inject constructor(
                     send("You are connected to the server.")
                     Log.d("ServerRepo", "startServer: connected")
                     runBlocking {
-                        gestureLogRepositoryImpl.logGesture("Client connected")
+                        gestureLogRepository.logGesture("Client connected")
                     }
 
                     try {
@@ -46,13 +48,13 @@ class ServerRepositoryImpl @Inject constructor(
                                     send("Server received: $receivedText")
                                     if (receivedText.contains("Gesture completed")) {
                                         runBlocking {
-                                            gestureLogRepositoryImpl.logGesture(receivedText)
+                                            gestureLogRepository.logGesture(receivedText)
                                         }
                                     }
                                 }
                                 is Frame.Binary -> {
                                     val receivedBytes = frame.readBytes()
-                                    Log.d("ServerRepo", "startServer: $receivedBytes")
+                                    Log.d("WebSocketServer", "startServer: $receivedBytes")
                                 }
                                 else -> {}
                             }
@@ -62,7 +64,7 @@ class ServerRepositoryImpl @Inject constructor(
                     } finally {
                         Log.d("WebSocketServer", "Client disconnected")
                         runBlocking {
-                            gestureLogRepositoryImpl.logGesture("Client disconnected")
+                            gestureLogRepository.logGesture("Client disconnected")
                         }
                     }
                 }
@@ -76,14 +78,22 @@ class ServerRepositoryImpl @Inject constructor(
         Log.d("WebSocketServer", "Server stopped")
     }
 
+    override fun generateRandomGesture(): String {
+        val startY = Random.nextInt(500, 1500)
+        val endY = Random.nextInt(500, 1500)
+        return if (startY > endY) {
+            "Swipe up from $startY to $endY"
+        } else {
+            "Swipe down from $startY to $endY"
+        }
+    }
+
     override fun sendGestures() {
         server?.application?.launch {
-            val gestures = listOf("Swipe up", "Swipe down", "Swipe up large", "Swipe down large")
             while (true) {
-                for (gesture in gestures) {
-                    delay(2000)
-                    sendGestureToClients(gesture)
-                }
+                delay(2000)
+                val gesture = generateRandomGesture()
+                sendGestureToClients(gesture)
             }
         }
     }
@@ -94,7 +104,7 @@ class ServerRepositoryImpl @Inject constructor(
             sessions.forEach { session ->
                 session.send(Frame.Text(gesture))
                 runBlocking {
-                    gestureLogRepositoryImpl.logGesture("Sent gesture: $gesture")
+                    gestureLogRepository.logGesture("Sent gesture: $gesture")
                 }
             }
         }

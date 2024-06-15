@@ -1,4 +1,4 @@
-package com.parg3v.domain.use_cases
+package com.parg3v.domain.use_cases.server
 
 import com.parg3v.domain.common.GestureLogError
 import com.parg3v.domain.common.Result

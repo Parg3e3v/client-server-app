@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.parg3v.client_serverapp.model.LogsStatus
 import com.parg3v.client_serverapp.model.ServerStatus
 import com.parg3v.domain.common.Result
-import com.parg3v.domain.use_cases.GetLogsFormDBUseCase
-import com.parg3v.domain.use_cases.ProvideServerIpUseCase
-import com.parg3v.domain.use_cases.StartServerUseCase
-import com.parg3v.domain.use_cases.StopServerUseCase
+import com.parg3v.domain.use_cases.server.GetLogsFormDBUseCase
+import com.parg3v.domain.use_cases.common.ProvideServerIpUseCase
+import com.parg3v.domain.use_cases.server.StartServerUseCase
+import com.parg3v.domain.use_cases.server.StopServerUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,22 +34,18 @@ class ServerViewModel @Inject constructor(
     private val _serverStatus = MutableStateFlow<ServerStatus>(ServerStatus.Offline)
     val serverStatus: StateFlow<ServerStatus> = _serverStatus.asStateFlow()
 
-    private val _isServerStarted = MutableStateFlow(false)
-    val isServerStarted: StateFlow<Boolean> = _isServerStarted.asStateFlow()
-
     private val _gestureLogs = MutableStateFlow(LogsStatus())
     val gestureLogs: StateFlow<LogsStatus> = _gestureLogs.asStateFlow()
 
     init {
         getServerIp()
-        getLogs()
     }
 
     private fun getServerIp() {
         _ip.value = provideServerIpUseCase()
     }
 
-    fun setPort(port: String) {
+    fun validatePort(port: String) {
         if (port.toIntOrNull() != null || port.isEmpty())
             _port.value = port
     }
@@ -57,12 +53,10 @@ class ServerViewModel @Inject constructor(
     fun startServer() {
         viewModelScope.launch {
             try {
-                startServerUseCase(port.value.toInt())
+                startServerUseCase(_port.value.toInt())
                 _serverStatus.value = ServerStatus.Online
-                _isServerStarted.value = true
             } catch (e: Exception) {
                 _serverStatus.value = ServerStatus.Error(e.localizedMessage ?: "")
-                _isServerStarted.value = false
             }
         }
     }
@@ -71,7 +65,6 @@ class ServerViewModel @Inject constructor(
         viewModelScope.launch {
             stopServerUseCase()
             _serverStatus.value = ServerStatus.Offline
-            _isServerStarted.value = false
         }
     }
 

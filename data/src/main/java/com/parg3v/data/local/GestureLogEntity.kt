@@ -6,6 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "gesture_logs")
 data class GestureLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val timestamp: Long,
+    val timestamp: Long = System.currentTimeMillis(),
     val message: String
 )
