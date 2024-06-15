@@ -18,7 +18,6 @@ import io.ktor.websocket.readText
 import io.ktor.websocket.send
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -35,7 +34,7 @@ class ServerRepositoryImpl @Inject constructor(
                 webSocket("/ws") { // WebSocket endpoint
                     send("You are connected to the server.")
                     Log.d("ServerRepo", "startServer: connected")
-                    runBlocking {
+                    launch  {
                         gestureLogRepository.logGesture("Client connected")
                     }
 
@@ -47,7 +46,7 @@ class ServerRepositoryImpl @Inject constructor(
                                     Log.d("WebSocketServer", "Received: $receivedText")
                                     send("Server received: $receivedText")
                                     if (receivedText.contains("Gesture completed")) {
-                                        runBlocking {
+                                        launch  {
                                             gestureLogRepository.logGesture(receivedText)
                                         }
                                     }
@@ -63,7 +62,7 @@ class ServerRepositoryImpl @Inject constructor(
                         Log.e("WebSocketServer", "Error: ${e.localizedMessage}")
                     } finally {
                         Log.d("WebSocketServer", "Client disconnected")
-                        runBlocking {
+                        launch  {
                             gestureLogRepository.logGesture("Client disconnected")
                         }
                     }
@@ -103,7 +102,7 @@ class ServerRepositoryImpl @Inject constructor(
             val sessions = mutableListOf<DefaultWebSocketSession>()
             sessions.forEach { session ->
                 session.send(Frame.Text(gesture))
-                runBlocking {
+                launch  {
                     gestureLogRepository.logGesture("Sent gesture: $gesture")
                 }
             }

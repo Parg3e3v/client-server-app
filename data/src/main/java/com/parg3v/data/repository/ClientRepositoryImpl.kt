@@ -25,7 +25,6 @@ import io.ktor.websocket.send
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 class ClientRepositoryImpl @Inject constructor(
@@ -48,7 +47,7 @@ class ClientRepositoryImpl @Inject constructor(
         ) {
             webSocketSession = this
             Log.d("WebSocketClient", "Connected to server")
-            runBlocking {
+            launch  {
                 gestureLogDao.insert(GestureLogEntity(message = "Connected to server"))
             }
 
@@ -63,7 +62,7 @@ class ClientRepositoryImpl @Inject constructor(
                         is Frame.Text -> {
                             val receivedText = frame.readText()
                             Log.d("WebSocketClient", "Received: $receivedText")
-                            runBlocking {
+                            launch  {
                                 gestureLogDao.insert(GestureLogEntity(message = "Received: $receivedText"))
                             }
                             performGesture(receivedText)
@@ -81,7 +80,7 @@ class ClientRepositoryImpl @Inject constructor(
                 Log.e("WebSocketClient", "Error: ${e.localizedMessage}")
             } finally {
                 Log.d("WebSocketClient", "Disconnected from server")
-                runBlocking {
+                launch  {
                     gestureLogDao.insert(GestureLogEntity(message = "Disconnected from server"))
                 }
             }
