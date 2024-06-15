@@ -6,7 +6,9 @@ import com.parg3v.data.gesture.GestureHandler
 import com.parg3v.data.local.GestureLogDao
 import com.parg3v.data.local.GestureLogDatabase
 import com.parg3v.data.repository.ClientRepositoryImpl
+import com.parg3v.data.repository.DataStoreRepositoryImpl
 import com.parg3v.domain.repository.ClientRepository
+import com.parg3v.domain.repository.DataStoreRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,4 +43,11 @@ object AppModule {
         gestureHandler: GestureHandler,
         gestureLogDao: GestureLogDao
     ): ClientRepository = ClientRepositoryImpl(app, gestureLogDao, gestureHandler)
+
+
+    @Provides
+    @Singleton
+    fun provideDataStoreRepository(
+        @ApplicationContext app: Context
+    ): DataStoreRepository = DataStoreRepositoryImpl(app)
 }

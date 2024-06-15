@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.parg3v.client_serverapp.R
@@ -116,13 +117,25 @@ fun ServerView(
 
             val serverStatus = serverStatusProvider()
             serverStatusText = when (serverStatus) {
-                is ServerStatus.Error -> stringResource(id = R.string.server_error, serverStatus.message)
+                is ServerStatus.Error -> stringResource(
+                    id = R.string.server_error,
+                    serverStatus.message
+                )
+
                 is ServerStatus.Offline -> stringResource(id = R.string.server_offline)
-                is ServerStatus.Online -> stringResource(id = R.string.server_online, ipProvider(), portProvider())
+                is ServerStatus.Online -> stringResource(
+                    id = R.string.server_online,
+                    ipProvider(),
+                    portProvider()
+                )
 
             }
 
-            Text(text = serverStatusText, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = serverStatusText,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodySmall
+            )
 
         }
     }

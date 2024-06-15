@@ -73,7 +73,7 @@ class ServerRepositoryImpl @Inject constructor(
         Log.d("WebSocketServer", "Server started on ${ServerConfig.IP}:$port")
     }
 
-    override fun stopServer() {
+    override suspend fun stopServer() {
         server?.stop(1000, 2000)
         Log.d("WebSocketServer", "Server stopped")
     }

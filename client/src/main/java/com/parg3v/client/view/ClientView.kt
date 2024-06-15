@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.parg3v.client.R
 import com.parg3v.client.components.CustomClientDialog
@@ -102,7 +103,11 @@ fun ClientView(
 
             }
 
-            Text(text = clientStatusText, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = clientStatusText,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

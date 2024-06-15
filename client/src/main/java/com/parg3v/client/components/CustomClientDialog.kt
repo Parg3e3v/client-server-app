@@ -45,11 +45,17 @@ fun CustomClientDialog(
                 Column(Modifier.padding(dimensionResource(id = R.dimen.padding_dialog_col))) {
                     Text(text = stringResource(R.string.title))
                     Spacer(Modifier.size(dimensionResource(id = R.dimen.dialog_spacer_1)))
-
+                    Text(
+                        text = stringResource(id = R.string.ip_text, ipProvider()),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                     OutlinedTextField(value = ipText, onValueChange = { ipText = it })
 
                     Spacer(Modifier.size(dimensionResource(id = R.dimen.dialog_default_padding)))
-
+                    Text(
+                        text = stringResource(id = R.string.port_text, portProvider()),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                     OutlinedTextField(value = portText, onValueChange = { portText = it })
                 }
                 Spacer(Modifier.size(dimensionResource(id = R.dimen.dialog_default_padding)))

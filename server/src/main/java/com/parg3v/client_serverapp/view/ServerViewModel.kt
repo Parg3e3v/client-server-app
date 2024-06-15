@@ -7,12 +7,15 @@ import com.parg3v.client_serverapp.model.ServerStatus
 import com.parg3v.domain.common.Result
 import com.parg3v.domain.use_cases.server.GetLogsFormDBUseCase
 import com.parg3v.domain.use_cases.common.ProvideServerIpUseCase
+import com.parg3v.domain.use_cases.server.GetPortServerAppUseCase
+import com.parg3v.domain.use_cases.server.SavePortServerAppUseCase
 import com.parg3v.domain.use_cases.server.StartServerUseCase
 import com.parg3v.domain.use_cases.server.StopServerUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,7 +25,9 @@ class ServerViewModel @Inject constructor(
     private val startServerUseCase: StartServerUseCase,
     private val stopServerUseCase: StopServerUseCase,
     private val provideServerIpUseCase: ProvideServerIpUseCase,
-    private val getGestureLogsUseCase: GetLogsFormDBUseCase
+    private val getGestureLogsUseCase: GetLogsFormDBUseCase,
+    private val getPortServerAppUseCase: GetPortServerAppUseCase,
+    private val savePortServerAppUseCase: SavePortServerAppUseCase
 ) : ViewModel() {
 
     private val _port = MutableStateFlow("")
@@ -39,6 +44,33 @@ class ServerViewModel @Inject constructor(
 
     init {
         getServerIp()
+        getPort()
+    }
+
+    private fun getPort() {
+        getPortServerAppUseCase().onEach { result ->
+            when (result) {
+                is Result.Success -> {
+                    _port.value = result.data ?: ""
+                }
+                else -> _port.value = ""
+            }
+        }.launchIn(viewModelScope)
+
+    }
+
+    private fun savePort(value: String) {
+        savePortServerAppUseCase(
+            value = value
+        ).onEach { result ->
+            when (result) {
+                is Result.Error -> {
+                    _port.value = ""
+                }
+
+                else -> {}
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun getServerIp() {
@@ -46,8 +78,12 @@ class ServerViewModel @Inject constructor(
     }
 
     fun validatePort(port: String) {
-        if (port.toIntOrNull() != null || port.isEmpty())
-            _port.value = port
+        if (port.toIntOrNull() != null || port.isEmpty()) {
+            if (port.length <= 4) {
+                _port.value = port
+                savePort(port)
+            }
+        }
     }
 
     fun startServer() {
@@ -68,12 +104,12 @@ class ServerViewModel @Inject constructor(
         }
     }
 
-    fun getLogs(){
-        getGestureLogsUseCase().onEach {result->
+    fun getLogs() {
+        getGestureLogsUseCase().onEach { result ->
             when (result) {
-                is Result.Error -> _gestureLogs.value =LogsStatus(error = result.error)
-                is Result.Loading -> _gestureLogs.value =LogsStatus(isLoading = true)
-                is Result.Success -> _gestureLogs.value =LogsStatus(data = result.data)
+                is Result.Error -> _gestureLogs.value = LogsStatus(error = result.error)
+                is Result.Loading -> _gestureLogs.value = LogsStatus(isLoading = true)
+                is Result.Success -> _gestureLogs.value = LogsStatus(data = result.data)
             }
         }
     }
