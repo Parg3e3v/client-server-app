@@ -125,9 +125,10 @@ class ClientViewModel @Inject constructor(
             }  catch (e: Exception) {
                 _clientStatus.value = ClientStatus.Error(e.localizedMessage ?: "Unknown error occurred")
                 e.printStackTrace()
-            } finally {
-                _clientStatus.value = ClientStatus.Offline
+                return@launch
             }
+
+            _clientStatus.value = ClientStatus.Offline
         }
     }
 

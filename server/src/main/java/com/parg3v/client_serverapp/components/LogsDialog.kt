@@ -52,7 +52,7 @@ fun LogsDialog(
                     )
                 }
                 LazyColumn {
-                    items(logList) { log ->
+                    items(logList.reversed()) { log ->
                         Text(
                             modifier = Modifier.padding(dimensionResource(id = R.dimen.logs_dialog_padding)),
                             text = "${log.timestamp} - ${log.message}"

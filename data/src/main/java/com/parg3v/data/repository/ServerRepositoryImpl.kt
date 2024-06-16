@@ -27,7 +27,7 @@ class ServerRepositoryImpl @Inject constructor(
 
     override suspend fun startServer(port: Int) {
         val localIp = getLocalIpAddress() ?: throw IllegalStateException("Unable to get local IP address")
-        server = embeddedServer(Netty, host = localIp, port = port) {
+        server = embeddedServer(Netty, port = port) {
             install(WebSockets)
             routing {
                 webSocket("/ws") {
