@@ -97,7 +97,7 @@ fun ClientView(
                     }
                 }, colors = ButtonColors(
                     containerColor = buttonColor,
-                    contentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     disabledContainerColor = Color.Gray,
                     disabledContentColor = Color.White
                 )
