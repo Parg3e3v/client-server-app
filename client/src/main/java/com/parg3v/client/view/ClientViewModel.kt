@@ -120,12 +120,15 @@ class ClientViewModel @Inject constructor(
     fun startClient() {
         viewModelScope.launch {
             try {
-                startClientUseCase(_ip.value, _port.value.toInt())
                 _clientStatus.value = ClientStatus.Online
+                startClientUseCase(_ip.value, _port.value.toInt())
             }  catch (e: Exception) {
                 _clientStatus.value = ClientStatus.Error(e.localizedMessage ?: "Unknown error occurred")
                 e.printStackTrace()
+                return@launch
             }
+
+            _clientStatus.value = ClientStatus.Offline
         }
     }
 

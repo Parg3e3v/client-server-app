@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="client">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-06-15T17:42:02.833827400Z">
+        <DropdownSelection timestamp="2024-06-16T12:48:54.574312800Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kcsa\.android\avd\_2_Resizable_Experimental_API_33.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kcsa\.android\avd\Resizable_Experimental_API_33.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="server">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-06-15T17:24:52.693075300Z">
+        <DropdownSelection timestamp="2024-06-16T09:09:55.294967900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kcsa\.android\avd\_2_Resizable_Experimental_API_33.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kcsa\.android\avd\Resizable_Experimental_API_33.avd" />
             </handle>
           </Target>
         </DropdownSelection>

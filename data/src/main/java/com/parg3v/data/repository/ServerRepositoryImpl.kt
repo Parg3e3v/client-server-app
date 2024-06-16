@@ -1,9 +1,9 @@
 package com.parg3v.data.repository
 
 import android.util.Log
-import com.parg3v.domain.common.config.ServerConfig
 import com.parg3v.domain.repository.GestureLogRepository
 import com.parg3v.domain.repository.ServerRepository
+import com.parg3v.domain.utils.getLocalIpAddress
 import io.ktor.server.application.install
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
@@ -11,13 +11,9 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
-import io.ktor.websocket.DefaultWebSocketSession
-import io.ktor.websocket.Frame
-import io.ktor.websocket.readBytes
-import io.ktor.websocket.readText
-import io.ktor.websocket.send
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import io.ktor.websocket.*
+import kotlinx.coroutines.*
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -26,55 +22,88 @@ class ServerRepositoryImpl @Inject constructor(
 ) : ServerRepository {
 
     private var server: ApplicationEngine? = null
+    private val serverScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val sessions = CopyOnWriteArrayList<DefaultWebSocketSession>()
 
     override suspend fun startServer(port: Int) {
-        server = embeddedServer(Netty, host = ServerConfig.IP, port = port) {
+        val localIp = getLocalIpAddress() ?: throw IllegalStateException("Unable to get local IP address")
+        server = embeddedServer(Netty, port = port) {
             install(WebSockets)
             routing {
-                webSocket("/ws") { // WebSocket endpoint
-                    send("You are connected to the server.")
-                    Log.d("ServerRepo", "startServer: connected")
-                    launch  {
-                        gestureLogRepository.logGesture("Client connected")
-                    }
-
-                    try {
-                        for (frame in incoming) {
-                            when (frame) {
-                                is Frame.Text -> {
-                                    val receivedText = frame.readText()
-                                    Log.d("WebSocketServer", "Received: $receivedText")
-                                    send("Server received: $receivedText")
-                                    if (receivedText.contains("Gesture completed")) {
-                                        launch  {
-                                            gestureLogRepository.logGesture(receivedText)
-                                        }
-                                    }
-                                }
-                                is Frame.Binary -> {
-                                    val receivedBytes = frame.readBytes()
-                                    Log.d("WebSocketServer", "startServer: $receivedBytes")
-                                }
-                                else -> {}
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e("WebSocketServer", "Error: ${e.localizedMessage}")
-                    } finally {
-                        Log.d("WebSocketServer", "Client disconnected")
-                        launch  {
-                            gestureLogRepository.logGesture("Client disconnected")
-                        }
-                    }
+                webSocket("/ws") {
+                    sessions.add(this)
+                    handleWebSocketConnection(this)
                 }
             }
         }.start(wait = false)
-        Log.d("WebSocketServer", "Server started on ${ServerConfig.IP}:$port")
+        Log.d("WebSocketChat [Server]", "Server started on $localIp:$port")
+    }
+
+    private suspend fun handleWebSocketConnection(session: DefaultWebSocketSession) {
+        session.send("You are connected to the server.")
+        Log.d("WebSocketChat [Server]", "startServer: connected")
+        serverScope.launch {
+            gestureLogRepository.logGesture("Client connected")
+        }
+
+        try {
+            for (frame in session.incoming) {
+                when (frame) {
+                    is Frame.Text -> handleTextFrame(frame)
+                    is Frame.Binary -> handleBinaryFrame(frame)
+                    else -> {}
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WebSocketChat [Server]", "Error: ${e.localizedMessage}")
+        } finally {
+            Log.d("WebSocketChat [Server]", "Client disconnected")
+            serverScope.launch {
+                gestureLogRepository.logGesture("Client disconnected")
+            }
+            sessions.remove(session)
+        }
+    }
+
+    private suspend fun handleTextFrame(frame: Frame.Text) {
+        val receivedText = frame.readText()
+        Log.d("WebSocketChat [Server]", "Received: $receivedText")
+        delay(1000)
+        when {
+            receivedText == "Browser is open" -> handleBrowserOpen()
+            receivedText.contains("Gesture") -> {
+                Log.d("WebSocketChat [Server]", "handleTextFrame: Server received callback, sending a gesture...")
+                sendGestures()
+                serverScope.launch {
+                    gestureLogRepository.logGesture(receivedText)
+                }
+            }
+        }
+    }
+
+    private fun handleBinaryFrame(frame: Frame.Binary) {
+        val receivedBytes = frame.readBytes()
+        Log.d("WebSocketChat [Server]", "startServer: $receivedBytes")
     }
 
     override suspend fun stopServer() {
+        sessions.forEach { session ->
+            try {
+                session.close(CloseReason(CloseReason.Codes.NORMAL, "Server is stopping"))
+            } catch (e: Exception) {
+                Log.e("WebSocketChat [Server]", "Error closing session: ${e.localizedMessage}")
+            }
+        }
+
+        serverScope.coroutineContext[Job]?.cancelAndJoin()
+
         server?.stop(1000, 2000)
-        Log.d("WebSocketServer", "Server stopped")
+        Log.d("WebSocketChat [Server]", "Server stopped")
+    }
+
+    override suspend fun handleBrowserOpen() {
+        Log.d("WebSocketChat [Server]", "Browser is open")
+        sendGestures()
     }
 
     override fun generateRandomGesture(): String {
@@ -88,23 +117,24 @@ class ServerRepositoryImpl @Inject constructor(
     }
 
     override fun sendGestures() {
-        server?.application?.launch {
-            while (true) {
-                delay(2000)
-                val gesture = generateRandomGesture()
-                sendGestureToClients(gesture)
-            }
+        Log.d("WebSocketChat [Server]", "sendGestures: on")
+        serverScope.launch {
+            delay(2000)
+            val gesture = generateRandomGesture()
+            sendGestureToClients(gesture)
         }
     }
 
     private suspend fun sendGestureToClients(gesture: String) {
-        server?.application?.launch {
-            val sessions = mutableListOf<DefaultWebSocketSession>()
-            sessions.forEach { session ->
+        sessions.forEach { session ->
+            try {
+                Log.e("WebSocketChat [Server]", "gesture sent: ${Frame.Text(gesture)}")
                 session.send(Frame.Text(gesture))
-                launch  {
+                serverScope.launch {
                     gestureLogRepository.logGesture("Sent gesture: $gesture")
                 }
+            } catch (e: Exception) {
+                Log.e("WebSocketChat [Server]", "Failed to send gesture: ${e.localizedMessage}")
             }
         }
     }

@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Path
 import android.net.Uri
 import android.util.Log
@@ -25,6 +26,7 @@ import io.ktor.websocket.send
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ClientRepositoryImpl @Inject constructor(
@@ -35,53 +37,56 @@ class ClientRepositoryImpl @Inject constructor(
 
     private var client: HttpClient? = null
     private var webSocketSession: WebSocketSession? = null
+
     override suspend fun startClient(ip: String, port: Int) {
         client = HttpClient(OkHttp) {
             install(WebSockets)
         }
-        client?.ws(
-            method = HttpMethod.Get,
-            host = ip,
-            port = port,
-            path = "/ws"
-        ) {
-            webSocketSession = this
-            Log.d("WebSocketClient", "Connected to server")
-            launch  {
-                gestureLogDao.insert(GestureLogEntity(message = "Connected to server"))
-            }
+        withContext(Dispatchers.IO) {
+            client?.ws(
+                method = HttpMethod.Get,
+                host = ip,
+                port = port,
+                path = "/ws"
+            ) {
+                webSocketSession = this
 
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.data = Uri.parse("http://www.google.com")
-            context.startActivity(intent)
+                Log.d("WebSocketChat [Client]", "Connected to server")
 
-            try {
-                for (frame in incoming) {
-                    when (frame) {
-                        is Frame.Text -> {
-                            val receivedText = frame.readText()
-                            Log.d("WebSocketClient", "Received: $receivedText")
-                            launch  {
-                                gestureLogDao.insert(GestureLogEntity(message = "Received: $receivedText"))
-                            }
-                            performGesture(receivedText)
-                        }
 
-                        is Frame.Binary -> {
-                            val receivedBytes = frame.readBytes()
-                            Log.d("WebSocketClient", "Received: $receivedBytes")
-                        }
-
-                        else -> {}
-                    }
+                withContext(Dispatchers.Main) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
                 }
-            } catch (e: Exception) {
-                Log.e("WebSocketClient", "Error: ${e.localizedMessage}")
-            } finally {
-                Log.d("WebSocketClient", "Disconnected from server")
-                launch  {
-                    gestureLogDao.insert(GestureLogEntity(message = "Disconnected from server"))
+
+                webSocketSession?.send("Browser is open")
+
+                try {
+                    for (frame in incoming) {
+                        when (frame) {
+                            is Frame.Text -> {
+                                val receivedText = frame.readText()
+                                Log.d("WebSocketChat [Client]", "Received: $receivedText")
+                                gestureLogDao.insert(GestureLogEntity(message = "Received: $receivedText"))
+                                performGesture(receivedText)
+                            }
+
+                            is Frame.Binary -> {
+                                val receivedBytes = frame.readBytes()
+                                Log.d("WebSocketChat [Client]", "Received: $receivedBytes")
+                            }
+
+                            else -> {}
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("WebSocketChat [Client]", "Error: ${e.localizedMessage}")
+                } finally {
+                    Log.d("WebSocketChat [Client]", "Disconnected from server")
+                    withContext(Dispatchers.IO) {
+                        gestureLogDao.insert(GestureLogEntity(message = "Disconnected from server"))
+                    }
                 }
             }
         }
@@ -91,48 +96,61 @@ class ClientRepositoryImpl @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             webSocketSession?.close()
             client?.close()
-            Log.d("WebSocketClient", "Client stopped")
+            Log.d("WebSocketClient  [Client]", "Client stopped")
         }
     }
 
-    override fun performGesture(gesture: String) {
+    override suspend fun performGesture(gesture: String) {
         val regex = Regex("Swipe (up|down) from (\\d+) to (\\d+)")
         val matchResult = regex.matchEntire(gesture)
         if (matchResult != null) {
+            val gestureDescription = GestureDescription.Builder()
+
             val startY = matchResult.groupValues[2].toFloat()
             val endY = matchResult.groupValues[3].toFloat()
 
-            val path = Path().apply {
-                moveTo(500f, startY)
-                lineTo(500f, endY)
-            }
+            val screenHeight = Resources.getSystem().displayMetrics.heightPixels.toFloat()
+            if (startY in 0f..screenHeight && endY in 0f..screenHeight) {
 
-            val gestureDescription = GestureDescription.Builder().addStroke(
-                GestureDescription.StrokeDescription(path, 0, 500)
-            ).build()
+                val path = Path().apply {
+                    moveTo(500f, startY)
+                    lineTo(500f, endY)
+                }
 
-            gestureHandler?.performGesture(
-                gestureDescription,
-                object : AccessibilityService.GestureResultCallback() {
-                    override fun onCompleted(gestureDescription: GestureDescription?) {
-                        super.onCompleted(gestureDescription)
-                        CoroutineScope(Dispatchers.IO).launch {
-                            webSocketSession?.send("Gesture completed: $gesture")
-                            gestureLogDao.insert(GestureLogEntity(message = "Gesture completed: $gesture"))
+                gestureDescription.addStroke(
+                    GestureDescription.StrokeDescription(path, 0, 1000)
+                ).build()
+
+                gestureHandler?.performGesture(
+                    gestureDescription.build(),
+                    object : AccessibilityService.GestureResultCallback() {
+                        override fun onCompleted(gestureDescription: GestureDescription?) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                Log.d("WebSocketClient [Client]", "Gesture completed: $gesture")
+                                webSocketSession?.send("Gesture completed: $gesture")
+                                gestureLogDao.insert(GestureLogEntity(message = "Gesture completed: $gesture"))
+                            }
+                            super.onCompleted(gestureDescription)
                         }
-                    }
 
-                    override fun onCancelled(gestureDescription: GestureDescription?) {
-                        super.onCancelled(gestureDescription)
-                        CoroutineScope(Dispatchers.IO).launch {
-                            webSocketSession?.send("Gesture cancelled: $gesture")
-                            gestureLogDao.insert(GestureLogEntity(message = "Gesture cancelled: $gesture"))
+                        override fun onCancelled(gestureDescription: GestureDescription?) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                Log.e("WebSocketClient [Client]", "Gesture cancelled: $gesture")
+                                webSocketSession?.send("Gesture cancelled: $gesture")
+                                gestureLogDao.insert(GestureLogEntity(message = "Gesture cancelled: $gesture"))
+                            }
+                            super.onCancelled(gestureDescription)
                         }
-                    }
-                }) ?: run {
-                Log.e("WebSocketClient", "GestureHandler instance is null")
+                    }) ?: run {
+                    Log.e("WebSocketClient [Client]", "GestureHandler instance is null")
+                }
+            } else {
+                webSocketSession?.send("Gesture coordinates out of bounds: $gesture")
+                Log.e("WebSocketClient [Client]", "Gesture coordinates out of bounds: $gesture")
             }
+        } else {
+            webSocketSession?.send("Gesture info not correct: $gesture")
+            Log.e("WebSocketClient [Client]", "Gesture info not correct: $gesture")
         }
     }
-
 }

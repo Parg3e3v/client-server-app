@@ -1,5 +1,8 @@
 package com.parg3v.client.view
 
+import android.content.Intent
+import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import com.parg3v.client.MyAccessibilityService
 import com.parg3v.client.R
 import com.parg3v.client.components.CustomClientDialog
 import com.parg3v.client.model.ClientStatus
@@ -39,6 +44,9 @@ fun ClientView(
     val dialogVisible = remember { mutableStateOf(false) }
     val switchClientState: () -> Unit
     val buttonColor: Color
+    val serviceError = stringResource(id = R.string.service_error)
+
+    val context = LocalContext.current
 
     if (clientStatusProvider() is ClientStatus.Online) {
         switchClientState = stopClient
@@ -75,7 +83,19 @@ fun ClientView(
             }
 
             Button(
-                onClick = { switchClientState() }, colors = ButtonColors(
+                onClick = {
+                    val service = MyAccessibilityService.getInstance()
+                    if (service == null) {
+                        Toast.makeText(
+                            context,
+                            serviceError,
+                            Toast.LENGTH_LONG
+                        ).show()
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    } else {
+                        switchClientState()
+                    }
+                }, colors = ButtonColors(
                     containerColor = buttonColor,
                     contentColor = Color.White,
                     disabledContainerColor = Color.Gray,

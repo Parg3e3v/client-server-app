@@ -13,4 +13,6 @@
     <string name="invalid_ip_port">Неверные значения</string>
     <string name="ip_text">Ip</string>
     <string name="port_text">Порт</string>
+    <string name="accessibility_service_description">Сервис для свайпов вверх-вниз</string>
+    <string name="service_error">Включите сервис в настройках</string>
 </resources>

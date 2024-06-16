@@ -5,8 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.parg3v.client_serverapp.model.LogsStatus
 import com.parg3v.client_serverapp.model.ServerStatus
 import com.parg3v.domain.common.Result
-import com.parg3v.domain.use_cases.server.GetLogsFormDBUseCase
 import com.parg3v.domain.use_cases.common.ProvideServerIpUseCase
+import com.parg3v.domain.use_cases.server.ClearLogsFormDBUseCase
+import com.parg3v.domain.use_cases.server.GetLogsFormDBUseCase
 import com.parg3v.domain.use_cases.server.GetPortServerAppUseCase
 import com.parg3v.domain.use_cases.server.SavePortServerAppUseCase
 import com.parg3v.domain.use_cases.server.StartServerUseCase
@@ -26,6 +27,7 @@ class ServerViewModel @Inject constructor(
     private val stopServerUseCase: StopServerUseCase,
     private val provideServerIpUseCase: ProvideServerIpUseCase,
     private val getGestureLogsUseCase: GetLogsFormDBUseCase,
+    private val clearLogsFormDBUseCase: ClearLogsFormDBUseCase,
     private val getPortServerAppUseCase: GetPortServerAppUseCase,
     private val savePortServerAppUseCase: SavePortServerAppUseCase
 ) : ViewModel() {
@@ -107,10 +109,24 @@ class ServerViewModel @Inject constructor(
     fun getLogs() {
         getGestureLogsUseCase().onEach { result ->
             when (result) {
-                is Result.Error -> _gestureLogs.value = LogsStatus(error = result.error)
-                is Result.Loading -> _gestureLogs.value = LogsStatus(isLoading = true)
-                is Result.Success -> _gestureLogs.value = LogsStatus(data = result.data)
+                is Result.Error -> {
+                    _gestureLogs.value = LogsStatus(error = result.error)
+                }
+                is Result.Loading -> {
+                    _gestureLogs.value = LogsStatus(isLoading = true)
+                }
+                is Result.Success -> {
+                    _gestureLogs.value = LogsStatus(data = result.data)
+                }
             }
+        }.launchIn(viewModelScope)
+    }
+
+    fun clearLogs(){
+        viewModelScope.launch {
+            clearLogsFormDBUseCase()
+            _gestureLogs.value = LogsStatus()
+            getLogs()
         }
     }
 
