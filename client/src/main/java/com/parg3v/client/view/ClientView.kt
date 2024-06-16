@@ -24,8 +24,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat.startActivity
-import com.parg3v.client.MyAccessibilityService
+import com.parg3v.data.gesture.MyAccessibilityService
 import com.parg3v.client.R
 import com.parg3v.client.components.CustomClientDialog
 import com.parg3v.client.model.ClientStatus
@@ -45,6 +44,7 @@ fun ClientView(
     val dialogVisible = remember { mutableStateOf(false) }
     val switchClientState: () -> Unit
     val buttonColor: Color
+    val serviceError = stringResource(id = R.string.service_error)
 
     val context = LocalContext.current
 
@@ -88,7 +88,7 @@ fun ClientView(
                     if (service == null) {
                         Toast.makeText(
                             context,
-                            "Please enable MyAccessibilityService",
+                            serviceError,
                             Toast.LENGTH_LONG
                         ).show()
                         context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
