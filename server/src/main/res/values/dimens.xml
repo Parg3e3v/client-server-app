@@ -8,4 +8,5 @@
     <dimen name="padding_row">60dp</dimen>
     <dimen name="padding_row_inner">5dp</dimen>
     <dimen name="padding_col_inner">20dp</dimen>
+    <dimen name="padding_clean_logs_button">10dp</dimen>
 </resources>

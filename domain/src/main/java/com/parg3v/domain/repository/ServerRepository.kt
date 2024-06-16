@@ -5,4 +5,5 @@ interface ServerRepository {
     suspend fun stopServer()
     fun sendGestures()
     fun generateRandomGesture(): String
+    suspend fun handleBrowserOpen()
 }

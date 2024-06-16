@@ -13,4 +13,5 @@
     <string name="server_online">Сервер запущен: %1$s:%2$s</string>
     <string name="server_error">Ошбка при запуске сервера: %1$s</string>
     <string name="no_logs">Логов пока нету</string>
+    <string name="clean_logs">очистить логи</string>
 </resources>

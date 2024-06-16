@@ -4,5 +4,6 @@ import com.parg3v.domain.model.GestureLog
 
 interface GestureLogRepository {
     suspend fun logGesture(message: String)
-    fun getAllLogs(): List<GestureLog>
+    suspend fun getAllLogs(): List<GestureLog>
+    suspend fun clearAllLogs()
 }

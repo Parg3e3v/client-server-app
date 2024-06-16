@@ -11,4 +11,8 @@ interface GestureLogDao {
 
     @Query("SELECT * FROM gesture_logs ORDER BY timestamp DESC")
     fun getAllLogs(): List<GestureLogEntity>
+
+    @Query("DELETE FROM gesture_logs")
+    suspend fun clearAllLogs()
+
 }

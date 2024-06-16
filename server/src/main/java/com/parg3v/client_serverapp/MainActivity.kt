@@ -40,7 +40,8 @@ class MainActivity : ComponentActivity() {
                         stopServer = viewModel::stopServer,
                         serverStatusProvider = { serverStatus },
                         logStatus = { logStatus },
-                        getLogs = viewModel::getLogs
+                        getLogs = viewModel::getLogs,
+                        cleanLogs = viewModel::clearLogs
                     )
                 }
             }
