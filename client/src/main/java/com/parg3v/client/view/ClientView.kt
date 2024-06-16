@@ -24,7 +24,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.parg3v.data.gesture.MyAccessibilityService
+import com.parg3v.client.MyAccessibilityService
 import com.parg3v.client.R
 import com.parg3v.client.components.CustomClientDialog
 import com.parg3v.client.model.ClientStatus
