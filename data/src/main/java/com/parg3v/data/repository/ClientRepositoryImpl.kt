@@ -8,7 +8,6 @@ import android.content.res.Resources
 import android.graphics.Path
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import com.parg3v.data.gesture.GestureHandler
 import com.parg3v.data.local.GestureLogDao
 import com.parg3v.data.local.GestureLogEntity
@@ -44,58 +43,50 @@ class ClientRepositoryImpl @Inject constructor(
             install(WebSockets)
         }
         withContext(Dispatchers.IO) {
-            try {
-                client?.ws(
-                    method = HttpMethod.Get,
-                    host = ip,
-                    port = port,
-                    path = "/ws"
-                ) {
-                    webSocketSession = this
+            client?.ws(
+                method = HttpMethod.Get,
+                host = ip,
+                port = port,
+                path = "/ws"
+            ) {
+                webSocketSession = this
 
-                    Log.d("WebSocketChat [Client]", "Connected to server")
+                Log.d("WebSocketChat [Client]", "Connected to server")
 
 
-                    withContext(Dispatchers.Main) {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"))
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
-                    }
-
-                    webSocketSession?.send("Browser is open")
-
-                    try {
-                        for (frame in incoming) {
-                            when (frame) {
-                                is Frame.Text -> {
-                                    val receivedText = frame.readText()
-                                    Log.d("WebSocketChat [Client]", "Received: $receivedText")
-                                    gestureLogDao.insert(GestureLogEntity(message = "Received: $receivedText"))
-                                    performGesture(receivedText)
-                                }
-                                is Frame.Binary -> {
-                                    val receivedBytes = frame.readBytes()
-                                    Log.d("WebSocketChat [Client]", "Received: $receivedBytes")
-                                }
-                                else -> {}
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e("WebSocketChat [Client]", "Error: ${e.localizedMessage}")
-                    } finally {
-                        Log.d("WebSocketChat [Client]", "Disconnected from server")
-                        withContext(Dispatchers.IO) {
-                            gestureLogDao.insert(GestureLogEntity(message = "Disconnected from server"))
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("WebSocketChat [Client]", "Could not connect to server: ${e.localizedMessage}")
-                withContext(Dispatchers.IO) {
-                    gestureLogDao.insert(GestureLogEntity(message = "Could not connect to server: ${e.localizedMessage}"))
-                }
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Could not connect to server: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
+
+                webSocketSession?.send("Browser is open")
+
+                try {
+                    for (frame in incoming) {
+                        when (frame) {
+                            is Frame.Text -> {
+                                val receivedText = frame.readText()
+                                Log.d("WebSocketChat [Client]", "Received: $receivedText")
+                                gestureLogDao.insert(GestureLogEntity(message = "Received: $receivedText"))
+                                performGesture(receivedText)
+                            }
+
+                            is Frame.Binary -> {
+                                val receivedBytes = frame.readBytes()
+                                Log.d("WebSocketChat [Client]", "Received: $receivedBytes")
+                            }
+
+                            else -> {}
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("WebSocketChat [Client]", "Error: ${e.localizedMessage}")
+                } finally {
+                    Log.d("WebSocketChat [Client]", "Disconnected from server")
+                    withContext(Dispatchers.IO) {
+                        gestureLogDao.insert(GestureLogEntity(message = "Disconnected from server"))
+                    }
                 }
             }
         }
@@ -118,7 +109,10 @@ class ClientRepositoryImpl @Inject constructor(
 
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels.toFloat()
             if (startY in 0f..screenHeight && endY in 0f..screenHeight) {
-                Log.d("WebSocketClient [Client]", "Performing gesture: $gesture from $startY to $endY")
+                Log.d(
+                    "WebSocketClient [Client]",
+                    "Performing gesture: $gesture from $startY to $endY"
+                )
 
                 val path = Path().apply {
                     moveTo(500f, startY)

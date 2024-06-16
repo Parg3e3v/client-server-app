@@ -13,4 +13,5 @@
     <string name="invalid_ip_port">Неверные значения</string>
     <string name="ip_text">Ip</string>
     <string name="port_text">Порт</string>
+    <string name="accessibility_service_description">null</string>
 </resources>

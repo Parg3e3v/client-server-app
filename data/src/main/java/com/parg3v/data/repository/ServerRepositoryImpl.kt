@@ -49,7 +49,7 @@ class ServerRepositoryImpl @Inject constructor(
         try {
             for (frame in session.incoming) {
                 when (frame) {
-                    is Frame.Text -> handleTextFrame(frame, session)
+                    is Frame.Text -> handleTextFrame(frame)
                     is Frame.Binary -> handleBinaryFrame(frame)
                     else -> {}
                 }
@@ -65,7 +65,7 @@ class ServerRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun handleTextFrame(frame: Frame.Text, session: DefaultWebSocketSession) {
+    private suspend fun handleTextFrame(frame: Frame.Text) {
         val receivedText = frame.readText()
         Log.d("WebSocketChat [Server]", "Received: $receivedText")
         delay(3000)
@@ -128,6 +128,7 @@ class ServerRepositoryImpl @Inject constructor(
     private suspend fun sendGestureToClients(gesture: String) {
         sessions.forEach { session ->
             try {
+                Log.e("WebSocketChat [Server]", "gesture sent: ${Frame.Text(gesture)}")
                 session.send(Frame.Text(gesture))
                 serverScope.launch {
                     gestureLogRepository.logGesture("Sent gesture: $gesture")

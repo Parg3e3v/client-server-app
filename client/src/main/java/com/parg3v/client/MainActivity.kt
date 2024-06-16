@@ -1,6 +1,13 @@
 package com.parg3v.client
 
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Bundle
+import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,11 +23,18 @@ import com.parg3v.client.view.ClientView
 import com.parg3v.client.view.ClientViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if(!isAccessibilityServiceEnabled(this, MyAccessibilityService::class.java)) {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+        }
+
         setContent {
             ClientserverappTheme {
                 val viewModel: ClientViewModel = hiltViewModel()
@@ -43,5 +57,25 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    fun isAccessibilityServiceEnabled(
+        context: Context,
+        service: Class<out AccessibilityService?>
+    ): Boolean {
+        val am: AccessibilityManager =
+            context.getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val enabledServices: List<AccessibilityServiceInfo> =
+            am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+
+        for (enabledService in enabledServices) {
+            val enabledServiceInfo: ServiceInfo = enabledService.resolveInfo.serviceInfo
+            if (enabledServiceInfo.packageName.equals(context.packageName) && enabledServiceInfo.name.equals(
+                    service.name
+                )
+            ) return true
+        }
+
+        return false
     }
 }
