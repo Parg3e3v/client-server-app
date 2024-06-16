@@ -104,44 +104,42 @@ class ClientRepositoryImpl @Inject constructor(
         val regex = Regex("Swipe (up|down) from (\\d+) to (\\d+)")
         val matchResult = regex.matchEntire(gesture)
         if (matchResult != null) {
+            val gestureDescription = GestureDescription.Builder()
+
             val startY = matchResult.groupValues[2].toFloat()
             val endY = matchResult.groupValues[3].toFloat()
 
             val screenHeight = Resources.getSystem().displayMetrics.heightPixels.toFloat()
             if (startY in 0f..screenHeight && endY in 0f..screenHeight) {
-                Log.d(
-                    "WebSocketClient [Client]",
-                    "Performing gesture: $gesture from $startY to $endY"
-                )
 
                 val path = Path().apply {
                     moveTo(500f, startY)
                     lineTo(500f, endY)
                 }
 
-                val gestureDescription = GestureDescription.Builder().addStroke(
-                    GestureDescription.StrokeDescription(path, 0, 500)
+                gestureDescription.addStroke(
+                    GestureDescription.StrokeDescription(path, 0, 1000)
                 ).build()
 
                 gestureHandler?.performGesture(
-                    gestureDescription,
+                    gestureDescription.build(),
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
-                            super.onCompleted(gestureDescription)
                             CoroutineScope(Dispatchers.IO).launch {
                                 Log.d("WebSocketClient [Client]", "Gesture completed: $gesture")
                                 webSocketSession?.send("Gesture completed: $gesture")
                                 gestureLogDao.insert(GestureLogEntity(message = "Gesture completed: $gesture"))
                             }
+                            super.onCompleted(gestureDescription)
                         }
 
                         override fun onCancelled(gestureDescription: GestureDescription?) {
-                            super.onCancelled(gestureDescription)
                             CoroutineScope(Dispatchers.IO).launch {
                                 Log.e("WebSocketClient [Client]", "Gesture cancelled: $gesture")
                                 webSocketSession?.send("Gesture cancelled: $gesture")
                                 gestureLogDao.insert(GestureLogEntity(message = "Gesture cancelled: $gesture"))
                             }
+                            super.onCancelled(gestureDescription)
                         }
                     }) ?: run {
                     Log.e("WebSocketClient [Client]", "GestureHandler instance is null")

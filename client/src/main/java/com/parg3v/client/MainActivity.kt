@@ -31,8 +31,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         if(!isAccessibilityServiceEnabled(this, MyAccessibilityService::class.java)) {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            startActivity(intent)
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
 
         setContent {

@@ -68,7 +68,7 @@ class ServerRepositoryImpl @Inject constructor(
     private suspend fun handleTextFrame(frame: Frame.Text) {
         val receivedText = frame.readText()
         Log.d("WebSocketChat [Server]", "Received: $receivedText")
-        delay(3000)
+        delay(1000)
         when {
             receivedText == "Browser is open" -> handleBrowserOpen()
             receivedText.contains("Gesture") -> {
